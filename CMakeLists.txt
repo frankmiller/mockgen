@@ -45,6 +45,7 @@ endif()
 
 add_executable( mockgen
   Main.cpp
+  MockGenAction.cpp
   )
 
 target_link_libraries( mockgen
