@@ -5,6 +5,8 @@
 #include <clang/Tooling/Tooling.h>
 #include <llvm/Support/CommandLine.h>
 
+#include <iostream>
+
 // Apply a custom category to all command-line options so that they are the
 // only ones displayed.
 static llvm::cl::OptionCategory MyToolCategory("mocgen options");
@@ -19,7 +21,17 @@ static llvm::cl::extrahelp CommonHelp(clang::tooling::CommonOptionsParser::HelpM
 
 int main(int argc, const char ** argv)
 {
-    clang::tooling::CommonOptionsParser OptionsParser(argc, argv, MyToolCategory);
-    clang::tooling::ClangTool Tool(OptionsParser.getCompilations(), OptionsParser.getSourcePathList());
-    return Tool.run(clang::tooling::newFrontendActionFactory<MockGenAction>().get());
+    try
+    {
+        clang::tooling::CommonOptionsParser OptionsParser(argc, argv, MyToolCategory);
+        clang::tooling::ClangTool Tool(OptionsParser.getCompilations(), OptionsParser.getSourcePathList());
+        MockGenActionFactory factory(std::cout);
+        return Tool.run(&factory);
+    }
+    catch (std::exception& ex)
+    {
+        std::cout << ex.what() << std::endl;
+    }
+
+    return 1;
 }

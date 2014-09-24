@@ -43,28 +43,43 @@ if ( WIN32 )
         )
 endif()
 
-add_executable( mockgen
-  Main.cpp
-  MockGenAction.cpp
-  )
+add_library( mockgenaction STATIC
+    MockGenAction.cpp
+    )
 
-target_link_libraries( mockgen
-  clangTooling
-  clangFrontend
-  clangDriver
-  LLVMOption
-  clangParse
-  LLVMMCParser
-  clangSerialization
-  clangSema
-  clangEdit
-  clangAnalysis
-  LLVMBitReader
-  clangASTMatchers
-  clangAST
-  clangLex
-  clangBasic
-  LLVMMC
-  LLVMSupport
-  )
+target_link_libraries( mockgenaction PUBLIC
+    clangTooling
+    clangFrontend
+    clangDriver
+    LLVMOption
+    clangParse
+    LLVMMCParser
+    clangSerialization
+    clangSema
+    clangEdit
+    clangAnalysis
+    LLVMBitReader
+    clangASTMatchers
+    clangAST
+    clangLex
+    clangBasic
+    LLVMMC
+    LLVMSupport
+    )
+
+add_executable( mockgen Main.cpp )
+target_link_libraries( mockgen mockgenaction )
+
+######## testing ########
+include( CTest )
+
+if( BUILD_TESTING )
+    find_package( Boost 1.56.0 )
+    include_directories( ${Boost_INCLUDE_DIRS} )
+    add_executable( mockgenTest Test.cpp)
+    target_link_libraries( mockgenTest mockgenaction )
+    add_test( mockgenTest mockgenTest )
+endif()
+
+
 
