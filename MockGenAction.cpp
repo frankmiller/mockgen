@@ -18,7 +18,7 @@ public:
     bool VisitCXXRecordDecl(clang::CXXRecordDecl * pClass)
     {
         std::string name = pClass->getDeclName().getAsString();
-        _os << "class " << name << std::endl;
+        _os << "\nMOCK_BASE_CLASS(Mock" << name << ", " << name << ")\n{\n";
 
         for (clang::CXXMethodDecl * pFunc : pClass->methods())
         {
@@ -31,22 +31,26 @@ public:
                     continue;
 
                 // return type
-                std::string returnType = pFunc->getReturnType().getAsString();
+                //std::string returnType = pFunc->getReturnType().getAsString();
 
-                _os << "    " << returnType << " " << funcName << "(";
+                //_os << "    " << returnType << " " << funcName << "(";
 
-                bool doComma = false;
-                for (clang::ParmVarDecl * pParam : pFunc->params())
-                {
-                    if (doComma)
-                        _os << ", ";
-                    else
-                        doComma = true;
-                    _os << pParam->getType().getAsString() << " " << pParam->getNameAsString();
-                }
-                _os << ");" << std::endl;
+                //bool doComma = false;
+                //for (clang::ParmVarDecl * pParam : pFunc->params())
+                //{
+                //    if (doComma)
+                //        _os << ", ";
+                //    else
+                //        doComma = true;
+                //    _os << pParam->getType().getAsString() << " " << pParam->getNameAsString();
+                //}
+                //_os << ");" << std::endl;
+
+                _os << "    MOCK_METHOD(" << funcName << ", " << pFunc->getNumParams() << ");\n";
             }
         }
+
+        _os << "};\n" << std::flush;
 
         return true;
     }

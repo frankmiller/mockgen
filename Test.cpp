@@ -25,16 +25,31 @@ private:
 };
 )__";
 
-std::string output1 = R"__(class Dum
-    void print();
-    void dum1(int a);
-    void dum2(int a, double b);
-    const int & dum3(int * a, const double & b);
+std::string output1 = R"__(
+MOCK_BASE_CLASS(MockDum, Dum)
+{
+    MOCK_METHOD(print, 0);
+    MOCK_METHOD(dum1, 1);
+    MOCK_METHOD(dum2, 2);
+    MOCK_METHOD(dum3, 2);
+};
 )__";
 
 void checkEqual(const std::string & lhs, const std::string & rhs)
 {
     BOOST_CHECK_EQUAL(lhs, rhs);
+
+    //if ( lhs != rhs )
+    //{
+    //    std::ofstream flhs( "lhs.txt" );
+    //    std::ofstream frhs( "rhs.txt" );
+
+    //    flhs << lhs;
+    //    frhs << rhs;
+
+    //    if ( flhs.is_open() && frhs.is_open() )
+    //        std::cout << "comparison wirtten to lhs.txt and rhs.txt" << std::endl;
+    //}
 
     std::regex linesRegex("^.*$");
     auto lit = std::sregex_iterator(lhs.begin(), lhs.end(), linesRegex);
