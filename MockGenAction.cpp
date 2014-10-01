@@ -2,21 +2,33 @@
 #include "MockGenAction.h"
 
 #include <clang/Frontend/FrontendActions.h>
+#include <clang/Frontend/CompilerInstance.h>
 #include <clang/AST/ASTConsumer.h>
 #include <clang/AST/RecursiveASTVisitor.h>
-
-#include <iostream>
 
 class MockGenVisitor : public clang::RecursiveASTVisitor<MockGenVisitor>
 {
 public:
-    MockGenVisitor(std::ostream & os)
-        : _os(os)
+    MockGenVisitor(clang::SourceManager & sm, std::ostream & os)
+        : _sm(sm)
+        , _os(os)
     {
     }
 
     bool VisitCXXRecordDecl(clang::CXXRecordDecl * pClass)
     {
+        clang::SourceLocation loc = pClass->getLocation();
+
+        // only examine classes in the file given.
+        // TODO will need something different here when I figure a way to not
+        // pase -xc++ on the command line.
+        if ( !_sm.isInMainFile(loc))
+            return true;
+
+        // don't bother with forward declarations
+        if ( !pClass->hasDefinition())
+            return true;
+
         std::string name = pClass->getDeclName().getAsString();
         _os << "\nMOCK_BASE_CLASS(Mock" << name << ", " << name << ")\n{\n";
 
@@ -56,14 +68,15 @@ public:
     }
 
 private:
+    clang::SourceManager & _sm;
     std::ostream & _os;
 };
 
 class MockGenConsumer : public clang::ASTConsumer
 {
 public:
-    MockGenConsumer(std::ostream & os)
-        : _visitor(os)
+    MockGenConsumer(clang::CompilerInstance & ci, std::ostream & os)
+        : _visitor(ci.getSourceManager(), os)
     {
     }
 
@@ -78,7 +91,7 @@ private:
     MockGenVisitor _visitor;
 };
 
-std::unique_ptr<clang::ASTConsumer> MockGenAction::CreateASTConsumer(clang::CompilerInstance &, llvm::StringRef)
+std::unique_ptr<clang::ASTConsumer> MockGenAction::CreateASTConsumer(clang::CompilerInstance & ci, llvm::StringRef)
 {
-    return std::make_unique<MockGenConsumer>(_os);
+    return std::make_unique<MockGenConsumer>(ci, _os);
 }
